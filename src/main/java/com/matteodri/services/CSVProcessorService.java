@@ -1,14 +1,14 @@
 package com.matteodri.services;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalInt;
 
 import org.springframework.stereotype.Service;
 
@@ -28,28 +28,21 @@ public class CSVProcessorService {
     private static final String FIELD_NAME_SOLAR_PRODUCTION = "curr_solar_generating";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private static final double F1_COST_PER_KWH = 0.129;
-    private static final double F2_COST_PER_KWH = 0.0299;
-    private static final double F3_COST_PER_KWH = 0.0299;
-    public static final int WARNING_THRESHOLD_W = 3500;
-
-    public void process(String csvFilePath) {
-
+    public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW) {
+        Stats stats = new Stats();
         BufferedReader br = null;
         String line;
         long lineCount = 0;
         LocalDateTime previousTimestamp = null;
-        double overallCostF1 = 0d;
-        double overallCostF2 = 0d;
-        double overallCostF3 = 0d;
-        double peakConsumptionW = 0d;
+        Map<Rate,Double> overallCostPerRate = new HashMap<>();
+        int peakConsumptionW = 0;
         Duration timeOverThreshold = Duration.ZERO;
         LocalDateTime peakConsumptionTimestamp = null;
         Map<String, Integer> fieldIndexMap = null;
 
         try {
 
-            br = new BufferedReader(new FileReader(csvFilePath));
+            br = new BufferedReader(csvFileReader);
             while ((line = br.readLine()) != null) {
 
                 String[] splitLine = line.split(CSV_SPLIT_BY);
@@ -60,7 +53,7 @@ public class CSVProcessorService {
                     // first line serves just as reference for starting timestamp
                     String strTimestamp = splitLine[fieldIndexMap.get(FIELD_NAME_TIMESTAMP)];
                     previousTimestamp = LocalDateTime.parse(strTimestamp, formatter);
-                    System.out.println("Starting at " + previousTimestamp);
+                    stats.setStartTime(previousTimestamp);
                 } else {
                     String strTimestamp = splitLine[fieldIndexMap.get(FIELD_NAME_TIMESTAMP)];
                     LocalDateTime timestamp = LocalDateTime.parse(strTimestamp, formatter);
@@ -75,39 +68,21 @@ public class CSVProcessorService {
                     int currentConsumptionFromNetworkW = currentConsumptionW - solarproductionW > 0 ?
                         currentConsumptionW - solarproductionW : 0;
 
-                    if (currentConsumptionFromNetworkW > WARNING_THRESHOLD_W) {
+                    if (warningThresholdW.isPresent() && currentConsumptionFromNetworkW > warningThresholdW.getAsInt()) {
                         timeOverThreshold = timeOverThreshold.plus(measurementTimeFrame);
                     }
 
                     Rate currentRate = Rate.of(timestamp);
 
-                    double costPerKWh;
-                    switch (currentRate) {
-                        case F1:
-                            costPerKWh = F1_COST_PER_KWH;
-                            break;
-                        case F2:
-                            costPerKWh = F2_COST_PER_KWH;
-                            break;
-                        default:
-                            costPerKWh = F3_COST_PER_KWH;
-                    }
+                    double costPerKWh = rates.costOf(currentRate);
 
                     double measurementTimeFrameInHours = (double) measurementTimeFrame.toMillis() / 3600_000;
 
                     double cost =
                         (double) currentConsumptionFromNetworkW / 1000 * costPerKWh * measurementTimeFrameInHours;
 
-                    switch (currentRate) {
-                        case F1:
-                            overallCostF1 += cost;
-                            break;
-                        case F2:
-                            overallCostF2 += cost;
-                            break;
-                        default:
-                            overallCostF3 += cost;
-                    }
+                    overallCostPerRate.compute(currentRate,
+                                               (r, overallCost) -> (overallCost == null) ? cost : overallCost + cost);
 
                     if (currentConsumptionFromNetworkW > peakConsumptionW) {
                         peakConsumptionW = currentConsumptionFromNetworkW;
@@ -119,9 +94,6 @@ public class CSVProcessorService {
 
                 lineCount++;
             }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -132,12 +104,17 @@ public class CSVProcessorService {
             }
         }
 
-        System.out.println("Finishing at " + previousTimestamp);
-        System.out.println("Overall cost = " + (overallCostF1 + overallCostF2 + overallCostF3));
-        System.out.println("Cost F1 = " + overallCostF1 + " F2 = " + overallCostF2 + " F3 = " + overallCostF3);
-        System.out.println("Peak consumption = " + peakConsumptionW + " on " + peakConsumptionTimestamp);
-        System.out.println("Minutes over " + WARNING_THRESHOLD_W + "W threshold = " + timeOverThreshold.toMinutes());
-        System.out.println("Lines processed = " + lineCount);
+        stats.setEndTime(previousTimestamp);
+        stats.setOverallCost(overallCostPerRate.values().stream().reduce(0d, Double::sum));
+        stats.setF1Cost(overallCostPerRate.get(Rate.F1));
+        stats.setF2Cost(overallCostPerRate.get(Rate.F2));
+        stats.setF3Cost(overallCostPerRate.get(Rate.F3));
+        stats.setPeakConsumptionW(peakConsumptionW);
+        stats.setPeakConsumptionTime(peakConsumptionTimestamp);
+        stats.setTimeOverWarningThreshold(timeOverThreshold);
+        stats.setProcessedLines(lineCount);
+
+        return stats;
     }
 
     private int parseIntValue(String strValue) {

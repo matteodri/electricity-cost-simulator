@@ -6,4 +6,6 @@ module com.matteodri.electricity.cost.simulator {
     requires java.sql;
     opens com.matteodri to spring.core, spring.beans, spring.context;
     opens com.matteodri.services to spring.core, spring.beans, spring.context;
+    exports com.matteodri.services;
+    exports com.matteodri;
 }
