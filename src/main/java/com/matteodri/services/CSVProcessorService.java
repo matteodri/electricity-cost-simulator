@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalInt;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.matteodri.util.Rate;
@@ -28,17 +31,26 @@ public class CSVProcessorService {
     private static final String FIELD_NAME_SOLAR_PRODUCTION = "curr_solar_generating";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private static final Logger logger = LogManager.getLogger(CSVProcessorService.class);
+
     public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW) {
         Stats stats = new Stats();
         BufferedReader br = null;
         String line;
         long lineCount = 0;
         LocalDateTime previousTimestamp = null;
-        Map<Rate,Double> overallCostPerRate = new HashMap<>();
         int peakConsumptionW = 0;
         Duration timeOverThreshold = Duration.ZERO;
         LocalDateTime peakConsumptionTimestamp = null;
         Map<String, Integer> fieldIndexMap = null;
+
+        // accumulator maps
+        Map<Rate, Double> overallCostPerRate = new HashMap<>();
+        Map<LocalDate, Double> consumptionPerDay = new HashMap<>();
+        Map<LocalDate, Double> solarProductionPerDay = new HashMap<>();
+
+        logger.info("Starting CSV processing...");
+        long startTime = System.currentTimeMillis();
 
         try {
 
@@ -62,13 +74,14 @@ public class CSVProcessorService {
                     String strCurrentConsumptionW = splitLine[fieldIndexMap.get(FIELD_NAME_CURRENT_CONSUMPTION)];
                     int currentConsumptionW = parseIntValue(strCurrentConsumptionW);
 
-                    String strSolarproduction = splitLine[fieldIndexMap.get(FIELD_NAME_SOLAR_PRODUCTION)];
-                    int solarproductionW = parseIntValue(strSolarproduction);
+                    String strSolarProduction = splitLine[fieldIndexMap.get(FIELD_NAME_SOLAR_PRODUCTION)];
+                    int solarProductionW = parseIntValue(strSolarProduction);
 
-                    int currentConsumptionFromNetworkW = currentConsumptionW - solarproductionW > 0 ?
-                        currentConsumptionW - solarproductionW : 0;
+                    int currentConsumptionFromNetworkW = currentConsumptionW - solarProductionW > 0 ?
+                        currentConsumptionW - solarProductionW : 0;
 
-                    if (warningThresholdW.isPresent() && currentConsumptionFromNetworkW > warningThresholdW.getAsInt()) {
+                    if (warningThresholdW.isPresent() && currentConsumptionFromNetworkW > warningThresholdW
+                        .getAsInt()) {
                         timeOverThreshold = timeOverThreshold.plus(measurementTimeFrame);
                     }
 
@@ -82,7 +95,13 @@ public class CSVProcessorService {
                         (double) currentConsumptionFromNetworkW / 1000 * costPerKWh * measurementTimeFrameInHours;
 
                     overallCostPerRate.compute(currentRate,
-                                               (r, overallCost) -> (overallCost == null) ? cost : overallCost + cost);
+                        (r, overallCost) -> (overallCost == null) ? cost : overallCost + cost);
+                    consumptionPerDay.compute(timestamp.toLocalDate(),
+                        (d, dailyConsumptionSoFar) -> (dailyConsumptionSoFar == null) ?
+                            currentConsumptionW : dailyConsumptionSoFar + currentConsumptionW);
+                    solarProductionPerDay.compute(timestamp.toLocalDate(),
+                        (d, dailySolarProductionSoFar) -> (dailySolarProductionSoFar == null) ?
+                            solarProductionW : dailySolarProductionSoFar + solarProductionW);
 
                     if (currentConsumptionFromNetworkW > peakConsumptionW) {
                         peakConsumptionW = currentConsumptionFromNetworkW;
@@ -91,16 +110,16 @@ public class CSVProcessorService {
 
                     previousTimestamp = timestamp;
                 }
-
+                logger.trace("Read line {}", lineCount);
                 lineCount++;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         } finally {
             try {
                 br.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e);
             }
         }
 
@@ -112,7 +131,12 @@ public class CSVProcessorService {
         stats.setPeakConsumptionW(peakConsumptionW);
         stats.setPeakConsumptionTime(peakConsumptionTimestamp);
         stats.setTimeOverWarningThreshold(timeOverThreshold);
+        stats.setDaysWithConsumptionGreaterThanSolarProduction(
+            calculateDaysWithConsumptionGreaterThanSolarProduction(consumptionPerDay, solarProductionPerDay));
+        stats.setDaysProcessed(Duration.between(stats.getStartTime(), stats.getEndTime()).toDays());
         stats.setProcessedLines(lineCount);
+
+        logger.info("Process took {} ms", (System.currentTimeMillis() - startTime));
 
         return stats;
     }
@@ -123,7 +147,7 @@ public class CSVProcessorService {
             intValue = Double.valueOf(strValue).intValue();
 
         } catch (NumberFormatException nfe) {
-            System.out.println("Not able to parse " + strValue);
+            logger.warn("Not able to parse {}", strValue);
         }
         return intValue;
     }
@@ -134,5 +158,12 @@ public class CSVProcessorService {
             fieldIndexMap.put(splitHeaderLine[index], index);
         }
         return fieldIndexMap;
+    }
+
+    private long calculateDaysWithConsumptionGreaterThanSolarProduction(Map<LocalDate, Double> consumptionPerDay,
+        Map<LocalDate, Double> solarProductionPerDay) {
+        return consumptionPerDay.keySet().stream()
+            .filter(day -> consumptionPerDay.get(day) > solarProductionPerDay.get(day))
+            .count();
     }
 }

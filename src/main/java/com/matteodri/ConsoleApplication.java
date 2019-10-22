@@ -37,7 +37,6 @@ public class ConsoleApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
         if (args.length < 4) {
             System.out.println("Expecting more input parameters.");
             exitWithUsagePrintout();
@@ -92,6 +91,7 @@ public class ConsoleApplication implements CommandLineRunner {
     }
 
     private void printStats(Stats stats) {
+        System.out.println("\nRESULTS");
         System.out.println("Dataset starts at " + stats.getStartTime());
         System.out.println("Dataset ends at " + stats.getEndTime());
         System.out.println("Overall cost = " + stats.getOverallCost());
@@ -100,6 +100,9 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println("Peak consumption = " + stats.getPeakConsumptionW()
             + " on " + stats.getPeakConsumptionTime());
         System.out.println("Minutes over threshold = " + stats.getTimeOverWarningThreshold().toMinutes());
-        System.out.println("Processed lines = " + stats.getProcessedLines());
+        System.out.println("Days with consumption greater than solar production = "
+            + stats.getDaysWithConsumptionGreaterThanSolarProduction());
+        System.out.println("Days processed " + stats.getDaysProcessed());
+        System.out.println("Lines processed = " + stats.getProcessedLines());
     }
 }

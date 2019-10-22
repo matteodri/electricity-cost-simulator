@@ -19,6 +19,8 @@ public class Stats {
     private Integer peakConsumptionW;
     private LocalDateTime peakConsumptionTime;
     private Duration timeOverWarningThreshold;
+    private long daysWithConsumptionGreaterThanSolarProduction;
+    private long daysProcessed;
     private long processedLines;
 
     public LocalDateTime getStartTime() {
@@ -93,6 +95,21 @@ public class Stats {
         this.timeOverWarningThreshold = timeOverWarningThreshold;
     }
 
+    public long getDaysWithConsumptionGreaterThanSolarProduction() {
+        return daysWithConsumptionGreaterThanSolarProduction;
+    }
+
+    public void setDaysWithConsumptionGreaterThanSolarProduction(long daysWithConsumptionGreaterThanSolarProduction) {
+        this.daysWithConsumptionGreaterThanSolarProduction = daysWithConsumptionGreaterThanSolarProduction;
+    }
+    public long getDaysProcessed() {
+        return daysProcessed;
+    }
+
+    public void setDaysProcessed(long daysProcessed) {
+        this.daysProcessed = daysProcessed;
+    }
+
     public long getProcessedLines() {
         return processedLines;
     }
@@ -113,6 +130,8 @@ public class Stats {
         sb.append(", peakConsumptionW=").append(peakConsumptionW);
         sb.append(", peakConsumptionTime=").append(peakConsumptionTime);
         sb.append(", timeOverWarningThreshold=").append(timeOverWarningThreshold);
+        sb.append(", daysWithConsumptionGreaterThanSolarProduction=").append(daysWithConsumptionGreaterThanSolarProduction);
+        sb.append(", daysProcessed=").append(daysProcessed);
         sb.append(", processedLines=").append(processedLines);
         sb.append('}');
         return sb.toString();
