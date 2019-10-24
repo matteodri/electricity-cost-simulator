@@ -1,7 +1,8 @@
 # Electricity Cost Simulator
-Small application to calculate electricity cost taking as input a tariff and a CSV file produced by an OWL Intuition device.
+Small command line application to calculate electricity cost taking as input a tariff and a CSV file produced by an OWL Intuition device. The application also simulates the cost savings that could have been achieved in the analysed time frame if system was equipped with an electricity storage.
 
 ## OWL Intuition
+[OWL Intuition](http://www.theowl.com/index.php/owl-intuition/) is an electricity monitoring system that can track electricity consumption and, in the PV version, record electricity produced from photovoltaic panels. Their software provides a way to monitor system electricity flows, keeping historical data that the user can download as CSV file.
 
 ## CSV format
 
