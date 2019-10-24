@@ -26,16 +26,17 @@ or:
 `java -jar electricity-cost-simulator-0.1.0.jar <csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold>`
 
 Parameters:
-| Name               | Description              | Unit      |
-|--------------------|--------------------------|-----------|
-| csv file           | path to CSV file         |           |
-| f1 cost            | cost of F1 rate          | money/kWh |
-| f2 cost            | cost of F2 rate          | money/kWh |
-| f3 cost            | cost of F3 rate          | money/kWh |
-| warning threshold  | virtual power threshold  | W         |
+
+| Name                 | Description              | Unit      |
+|----------------------|--------------------------|-----------|
+| `csv file`           | path to CSV file         |           |
+| `f1 cost`            | cost of F1 rate          | money/kWh |
+| `f2 cost`            | cost of F2 rate          | money/kWh |
+| `f3 cost`            | cost of F3 rate          | money/kWh |
+| `warning threshold`  | virtual power threshold  | W         |
 
 
-Application, among other stats, will return the amount of time during which consumption from the network exceeded the warning threshold. This value helps determine if it would be possible to move to a cheaper contract with a lower allowed peak consumption.
+The application, among other stats, will return the amount of time during which consumption from the network exceeded the `warning threshold`. This value helps determine if it would be possible to move to a cheaper contract with a lower allowed peak consumption.
 Cost values are currency agnostic, thus results are not tied to any specific currency or convertion rate.
 
 Sample output:
