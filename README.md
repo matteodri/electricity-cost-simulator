@@ -40,7 +40,19 @@ The application, among other stats, will return the amount of time during which 
 Cost values are currency agnostic, thus results are not tied to any specific currency or convertion rate.
 
 Sample output:
-
+    
+    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./2019_readings.csv" 0.129 0.129 0.0299 3500
+    
+    RESULTS
+    Dataset starts at 2019-04-17T20:54:13
+    Dataset ends at 2019-09-30T23:59:55
+    Overall cost = 88.0480661996731
+    Cost F1 = 11.79842008750088 F2 = 71.95151102922807 F3 = 4.298135082944151
+    Peak consumption = 4476W on 2019-04-27T12:17:53
+    Minutes over threshold = 16
+    Days with consumption greater than solar production = 22
+    Days processed 166
+    Lines processed = 718576
 
 # License
 
