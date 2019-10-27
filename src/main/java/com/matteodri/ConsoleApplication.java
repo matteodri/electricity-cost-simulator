@@ -86,7 +86,7 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println("    or: java -jar electricity-cost-simulator-0.1.0.jar "
             + "<csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold>");
         System.out.println(" Costs are money per kWh. The warning threshold is a value in Watt, "
-            + "the amount of time during which consumption from the network exceeded the threshold will be returned");
+            + "the amount of time during which consumption from the grid exceeded the threshold will be returned");
         exit(1);
     }
 

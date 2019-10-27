@@ -80,19 +80,19 @@ public class CSVProcessorService {
                     String strSolarProduction = splitLine[fieldIndexMap.get(FIELD_NAME_SOLAR_PRODUCTION)];
                     int solarProductionW = parseIntValue(strSolarProduction);
 
-                    // a positive energy balance indicates energy is being drawn from the network,
-                    // a negative balance means surplus energy is being pushed to the network
-                    int energyBalanceFromNetwork = currentConsumptionW - solarProductionW;
-                    boolean isEnergyBeingDrawnFromNetwork = energyBalanceFromNetwork > 0;
+                    // a positive energy balance indicates energy is being drawn from the electricity grid,
+                    // a negative balance means surplus energy is being pushed to the grid
+                    int energyBalanceFromGrid = currentConsumptionW - solarProductionW;
+                    boolean isEnergyBeingDrawnFromGrid = energyBalanceFromGrid > 0;
 
-                    boolean canBatteryCoverCurrentConsumption = !isEnergyBeingDrawnFromNetwork ||
-                        battery.retrievePower(energyBalanceFromNetwork * measurementTimeFrameInHours);
+                    boolean canBatteryCoverCurrentConsumption = !isEnergyBeingDrawnFromGrid ||
+                        battery.retrievePower(energyBalanceFromGrid * measurementTimeFrameInHours);
 
-                    if (!isEnergyBeingDrawnFromNetwork) {
-                        battery.storePower(-energyBalanceFromNetwork * measurementTimeFrameInHours);
+                    if (!isEnergyBeingDrawnFromGrid) {
+                        battery.storePower(-energyBalanceFromGrid * measurementTimeFrameInHours);
                     }
 
-                    if (warningThresholdW.isPresent() && energyBalanceFromNetwork > warningThresholdW
+                    if (warningThresholdW.isPresent() && energyBalanceFromGrid > warningThresholdW
                         .getAsInt()) {
                         timeOverThreshold = timeOverThreshold.plus(measurementTimeFrame);
                     }
@@ -101,8 +101,8 @@ public class CSVProcessorService {
 
                     double costPerKWh = rates.costOf(currentRate);
 
-                    double cost = isEnergyBeingDrawnFromNetwork ?
-                                  (double) energyBalanceFromNetwork / 1000 * costPerKWh * measurementTimeFrameInHours
+                    double cost = isEnergyBeingDrawnFromGrid ?
+                                  (double) energyBalanceFromGrid / 1000 * costPerKWh * measurementTimeFrameInHours
                                   : 0;
 
                     overallCostPerRate.compute(currentRate,
@@ -118,8 +118,8 @@ public class CSVProcessorService {
                         (d, dailySolarProductionSoFar) -> (dailySolarProductionSoFar == null) ?
                             solarProductionW : dailySolarProductionSoFar + solarProductionW);
 
-                    if (energyBalanceFromNetwork > peakConsumptionW) {
-                        peakConsumptionW = energyBalanceFromNetwork;
+                    if (energyBalanceFromGrid > peakConsumptionW) {
+                        peakConsumptionW = energyBalanceFromGrid;
                         peakConsumptionTimestamp = timestamp;
                     }
 

@@ -32,8 +32,8 @@ public enum Rate {
             && timestamp.getHour() >= 8 && timestamp.getHour() < 19){
             return F1;
 
-        } else if ((timestamp.getDayOfWeek().equals(DayOfWeek.SUNDAY)
-                   || (timestamp.getHour() >= 23 && timestamp.getHour() < 7))){
+        } else if (timestamp.getDayOfWeek().equals(DayOfWeek.SUNDAY)
+                   || (timestamp.getHour() >= 23 || timestamp.getHour() < 7)){
             return F3;
 
         } else {
