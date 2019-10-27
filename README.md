@@ -1,5 +1,6 @@
 # Electricity Cost Simulator
 Small command line application to calculate electricity cost taking as input a tariff and a CSV file produced by an OWL Intuition device. The application also simulates the cost savings that could have been achieved in the analysed time frame if system was equipped with an electricity storage.
+Refunds for energy pushed to the network are not being considered, the application only calculates costs on the energy being drawn from the network.
 
 ## OWL Intuition
 [OWL Intuition](http://www.theowl.com/index.php/owl-intuition/) is an electricity monitoring system that can track electricity consumption and, in the PV version, record electricity produced from photovoltaic panels. Their software provides a way to monitor system electricity flows, keeping historical data that the user can download as CSV file.
@@ -46,8 +47,9 @@ Sample output:
     RESULTS
     Dataset starts at 2019-04-17T20:54:13
     Dataset ends at 2019-09-30T23:59:55
-    Overall cost = 88.0480661996731
+    Overall cost = 88.04806619967312
     Cost F1 = 11.79842008750088 F2 = 71.95151102922807 F3 = 4.298135082944151
+    Cost if had a battery F1 = 1.6059516733333363 F2 = 3.561511621666597 F3 = 0.404122104388888
     Peak consumption = 4476W on 2019-04-27T12:17:53
     Minutes over threshold = 16
     Days with consumption greater than solar production = 22
