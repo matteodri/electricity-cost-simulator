@@ -16,6 +16,9 @@ public class Stats {
     private Double f1Cost;
     private Double f2Cost;
     private Double f3Cost;
+    private Double f1CostIfHadBattery;
+    private Double f2CostIfHadBattery;
+    private Double f3CostIfHadBattery;
     private Integer peakConsumptionW;
     private LocalDateTime peakConsumptionTime;
     private Duration timeOverWarningThreshold;
@@ -69,6 +72,30 @@ public class Stats {
 
     public void setF3Cost(Double f3Cost) {
         this.f3Cost = f3Cost;
+    }
+
+    public Double getF1CostIfHadBattery() {
+        return f1CostIfHadBattery;
+    }
+
+    public void setF1CostIfHadBattery(Double f1CostIfHadBattery) {
+        this.f1CostIfHadBattery = f1CostIfHadBattery;
+    }
+
+    public Double getF2CostIfHadBattery() {
+        return f2CostIfHadBattery;
+    }
+
+    public void setF2CostIfHadBattery(Double f2CostIfHadBattery) {
+        this.f2CostIfHadBattery = f2CostIfHadBattery;
+    }
+
+    public Double getF3CostIfHadBattery() {
+        return f3CostIfHadBattery;
+    }
+
+    public void setF3CostIfHadBattery(Double f3CostIfHadBattery) {
+        this.f3CostIfHadBattery = f3CostIfHadBattery;
     }
 
     public Integer getPeakConsumptionW() {
@@ -127,6 +154,9 @@ public class Stats {
         sb.append(", f1Cost=").append(f1Cost);
         sb.append(", f2Cost=").append(f2Cost);
         sb.append(", f3Cost=").append(f3Cost);
+        sb.append(", f1CostIfHadBattery=").append(f1CostIfHadBattery);
+        sb.append(", f2CostIfHadBattery=").append(f2CostIfHadBattery);
+        sb.append(", f3CostIfHadBattery=").append(f3CostIfHadBattery);
         sb.append(", peakConsumptionW=").append(peakConsumptionW);
         sb.append(", peakConsumptionTime=").append(peakConsumptionTime);
         sb.append(", timeOverWarningThreshold=").append(timeOverWarningThreshold);
@@ -136,4 +166,5 @@ public class Stats {
         sb.append('}');
         return sb.toString();
     }
+
 }

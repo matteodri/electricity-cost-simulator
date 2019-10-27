@@ -97,8 +97,10 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println("Overall cost = " + stats.getOverallCost());
         System.out.println("Cost F1 = " + stats.getF1Cost() + " F2 = " + stats.getF2Cost()
             + " F3 = " + stats.getF3Cost());
+        System.out.println("Cost if had a battery F1 = " + stats.getF1CostIfHadBattery() + " F2 = " + stats.getF2CostIfHadBattery()
+            + " F3 = " + stats.getF3CostIfHadBattery());
         System.out.println("Peak consumption = " + stats.getPeakConsumptionW()
-            + " on " + stats.getPeakConsumptionTime());
+            + "W on " + stats.getPeakConsumptionTime());
         System.out.println("Minutes over threshold = " + stats.getTimeOverWarningThreshold().toMinutes());
         System.out.println("Days with consumption greater than solar production = "
             + stats.getDaysWithConsumptionGreaterThanSolarProduction());

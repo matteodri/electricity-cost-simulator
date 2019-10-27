@@ -35,6 +35,7 @@ public class CSVProcessorService {
 
     public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW) {
         Stats stats = new Stats();
+        Battery battery = new Battery.Builder().build();
         BufferedReader br = null;
         String line;
         long lineCount = 0;
@@ -46,6 +47,7 @@ public class CSVProcessorService {
 
         // accumulator maps
         Map<Rate, Double> overallCostPerRate = new HashMap<>();
+        Map<Rate, Double> overallCostPerRateIfHadBattery = new HashMap<>();
         Map<LocalDate, Double> consumptionPerDay = new HashMap<>();
         Map<LocalDate, Double> solarProductionPerDay = new HashMap<>();
 
@@ -70,6 +72,7 @@ public class CSVProcessorService {
                     String strTimestamp = splitLine[fieldIndexMap.get(FIELD_NAME_TIMESTAMP)];
                     LocalDateTime timestamp = LocalDateTime.parse(strTimestamp, formatter);
                     Duration measurementTimeFrame = Duration.between(previousTimestamp, timestamp);
+                    double measurementTimeFrameInHours = (double) measurementTimeFrame.toMillis() / 3600_000;
 
                     String strCurrentConsumptionW = splitLine[fieldIndexMap.get(FIELD_NAME_CURRENT_CONSUMPTION)];
                     int currentConsumptionW = parseIntValue(strCurrentConsumptionW);
@@ -77,10 +80,19 @@ public class CSVProcessorService {
                     String strSolarProduction = splitLine[fieldIndexMap.get(FIELD_NAME_SOLAR_PRODUCTION)];
                     int solarProductionW = parseIntValue(strSolarProduction);
 
-                    int currentConsumptionFromNetworkW = currentConsumptionW - solarProductionW > 0 ?
-                        currentConsumptionW - solarProductionW : 0;
+                    // a positive energy balance indicates energy is being drawn from the network,
+                    // a negative balance means surplus energy is being pushed to the network
+                    int energyBalanceFromNetwork = currentConsumptionW - solarProductionW;
+                    boolean isEnergyBeingDrawnFromNetwork = energyBalanceFromNetwork > 0;
 
-                    if (warningThresholdW.isPresent() && currentConsumptionFromNetworkW > warningThresholdW
+                    boolean canBatteryCoverCurrentConsumption = !isEnergyBeingDrawnFromNetwork ||
+                        battery.retrievePower(energyBalanceFromNetwork * measurementTimeFrameInHours);
+
+                    if (!isEnergyBeingDrawnFromNetwork) {
+                        battery.storePower(-energyBalanceFromNetwork * measurementTimeFrameInHours);
+                    }
+
+                    if (warningThresholdW.isPresent() && energyBalanceFromNetwork > warningThresholdW
                         .getAsInt()) {
                         timeOverThreshold = timeOverThreshold.plus(measurementTimeFrame);
                     }
@@ -89,13 +101,16 @@ public class CSVProcessorService {
 
                     double costPerKWh = rates.costOf(currentRate);
 
-                    double measurementTimeFrameInHours = (double) measurementTimeFrame.toMillis() / 3600_000;
-
-                    double cost =
-                        (double) currentConsumptionFromNetworkW / 1000 * costPerKWh * measurementTimeFrameInHours;
+                    double cost = isEnergyBeingDrawnFromNetwork ?
+                                  (double) energyBalanceFromNetwork / 1000 * costPerKWh * measurementTimeFrameInHours
+                                  : 0;
 
                     overallCostPerRate.compute(currentRate,
                         (r, overallCost) -> (overallCost == null) ? cost : overallCost + cost);
+                    if (!canBatteryCoverCurrentConsumption) {
+                        overallCostPerRateIfHadBattery.compute(currentRate,
+                            (r, overallCost) -> (overallCost == null) ? cost : overallCost + cost);
+                    }
                     consumptionPerDay.compute(timestamp.toLocalDate(),
                         (d, dailyConsumptionSoFar) -> (dailyConsumptionSoFar == null) ?
                             currentConsumptionW : dailyConsumptionSoFar + currentConsumptionW);
@@ -103,8 +118,8 @@ public class CSVProcessorService {
                         (d, dailySolarProductionSoFar) -> (dailySolarProductionSoFar == null) ?
                             solarProductionW : dailySolarProductionSoFar + solarProductionW);
 
-                    if (currentConsumptionFromNetworkW > peakConsumptionW) {
-                        peakConsumptionW = currentConsumptionFromNetworkW;
+                    if (energyBalanceFromNetwork > peakConsumptionW) {
+                        peakConsumptionW = energyBalanceFromNetwork;
                         peakConsumptionTimestamp = timestamp;
                     }
 
@@ -128,6 +143,9 @@ public class CSVProcessorService {
         stats.setF1Cost(overallCostPerRate.get(Rate.F1));
         stats.setF2Cost(overallCostPerRate.get(Rate.F2));
         stats.setF3Cost(overallCostPerRate.get(Rate.F3));
+        stats.setF1CostIfHadBattery(overallCostPerRateIfHadBattery.get(Rate.F1));
+        stats.setF2CostIfHadBattery(overallCostPerRateIfHadBattery.get(Rate.F2));
+        stats.setF3CostIfHadBattery(overallCostPerRateIfHadBattery.get(Rate.F3));
         stats.setPeakConsumptionW(peakConsumptionW);
         stats.setPeakConsumptionTime(peakConsumptionTimestamp);
         stats.setTimeOverWarningThreshold(timeOverThreshold);

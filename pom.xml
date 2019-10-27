@@ -16,8 +16,10 @@
 
   <properties>
     <java.version>11</java.version>
-    <org.springframework.version>2.1.8.RELEASE</org.springframework.version>
     <project.automatic.module.name>com.matteodri.electricity.cost.simulator</project.automatic.module.name>
+    <org.springframework.version>2.1.8.RELEASE</org.springframework.version>
+    <org.junit.jupiter.version>5.5.2</org.junit.jupiter.version>
+    <org.mockito.version>3.1.0</org.mockito.version>
   </properties>
 
   <dependencies>
@@ -45,6 +47,21 @@
       <version>${org.springframework.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${org.junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${org.mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
