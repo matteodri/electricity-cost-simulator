@@ -63,9 +63,11 @@ Sample output:
 ## Source
 
 Assemble JAR:
+
     mvn clean package
 
 Upload code coverage to Codacy:
+
     mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken=<Project API token> -DapiToken=<Project API token>
 
 # License
