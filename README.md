@@ -1,4 +1,8 @@
 # Electricity Cost Simulator
+
+[![jdk11](https://img.shields.io/badge/java-11-blue.svg)](http://jdk.java.net/11)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cd4fcd368f3f4818bbb351dc4e1a34c8)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=matteodri/electricity-cost-simulator&amp;utm_campaign=Badge_Grade)
+
 Small command line application to calculate electricity cost taking as input a tariff and a CSV file produced by an OWL Intuition device. The application also simulates the cost savings that could have been achieved in the analysed time frame if system was equipped with an electricity storage.
 Refunds for energy pushed to the network are not being considered, the application only calculates costs on the energy being drawn from the network.
 
@@ -55,6 +59,14 @@ Sample output:
     Days with consumption greater than solar production = 22
     Days processed 166
     Lines processed = 718576
+
+## Source
+
+Assemble JAR:
+    mvn clean package
+
+Upload code coverage to Codacy:
+    mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken=<Project API token> -DapiToken=<Project API token>
 
 # License
 
