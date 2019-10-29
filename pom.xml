@@ -20,6 +20,7 @@
     <org.springframework.version>2.1.8.RELEASE</org.springframework.version>
     <org.junit.jupiter.version>5.5.2</org.junit.jupiter.version>
     <org.mockito.version>3.1.0</org.mockito.version>
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
   </properties>
 
   <dependencies>
@@ -50,7 +51,7 @@
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
+      <artifactId>junit-jupiter</artifactId>
       <version>${org.junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
@@ -70,6 +71,12 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
       </plugin>
 
       <plugin>
