@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.OptionalInt;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +35,6 @@ public class CSVProcessorService {
     private static final Logger logger = LogManager.getLogger(CSVProcessorService.class);
 
     public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW) {
-        Stats stats = new Stats();
         Battery battery = new Battery.Builder().build();
         BufferedReader br = null;
         String line;
@@ -44,6 +44,7 @@ public class CSVProcessorService {
         Duration timeOverThreshold = Duration.ZERO;
         LocalDateTime peakConsumptionTimestamp = null;
         Map<String, Integer> fieldIndexMap = null;
+        Stats stats = new Stats();
 
         // accumulator maps
         Map<Rate, Double> overallCostPerRate = new HashMap<>();
@@ -140,18 +141,20 @@ public class CSVProcessorService {
 
         stats.setEndTime(previousTimestamp);
         stats.setOverallCost(overallCostPerRate.values().stream().reduce(0d, Double::sum));
-        stats.setF1Cost(overallCostPerRate.get(Rate.F1));
-        stats.setF2Cost(overallCostPerRate.get(Rate.F2));
-        stats.setF3Cost(overallCostPerRate.get(Rate.F3));
-        stats.setF1CostIfHadBattery(overallCostPerRateIfHadBattery.get(Rate.F1));
-        stats.setF2CostIfHadBattery(overallCostPerRateIfHadBattery.get(Rate.F2));
-        stats.setF3CostIfHadBattery(overallCostPerRateIfHadBattery.get(Rate.F3));
+        stats.setF1Cost(overallCostPerRate.getOrDefault(Rate.F1, 0d));
+        stats.setF2Cost(overallCostPerRate.getOrDefault(Rate.F2, 0d));
+        stats.setF3Cost(overallCostPerRate.getOrDefault(Rate.F3, 0d));
+        stats.setF1CostIfHadBattery(overallCostPerRateIfHadBattery.getOrDefault(Rate.F1, 0d));
+        stats.setF2CostIfHadBattery(overallCostPerRateIfHadBattery.getOrDefault(Rate.F2, 0d));
+        stats.setF3CostIfHadBattery(overallCostPerRateIfHadBattery.getOrDefault(Rate.F3, 0d));
         stats.setPeakConsumptionW(peakConsumptionW);
         stats.setPeakConsumptionTime(peakConsumptionTimestamp);
         stats.setTimeOverWarningThreshold(timeOverThreshold);
         stats.setDaysWithConsumptionGreaterThanSolarProduction(
             calculateDaysWithConsumptionGreaterThanSolarProduction(consumptionPerDay, solarProductionPerDay));
-        stats.setDaysProcessed(Duration.between(stats.getStartTime(), stats.getEndTime()).toDays());
+        stats.setDaysProcessed((Objects.nonNull(stats.getStartTime()) && Objects.nonNull(stats.getEndTime())) ?
+                                   Duration.between(stats.getStartTime(), stats.getEndTime()).toDays()
+                                 : 0 );
         stats.setProcessedLines(lineCount);
 
         logger.info("Process took {} ms", (System.currentTimeMillis() - startTime));
