@@ -16,7 +16,7 @@ class BatteryTest {
 
     @Test
     @DisplayName("Test adding energy and checking current value with 100% efficiency")
-    void getCurrentlyStoredEnergyWh() {
+    public void getCurrentlyStoredEnergyWh() {
         target = new Battery.Builder().withCapacityWh(10_000).withEfficiencyPercentage(100).build();
         target.storePower(5000);
 
@@ -26,7 +26,7 @@ class BatteryTest {
 
     @Test
     @DisplayName("Test storage with 100% efficiency")
-    void storePowerFullEfficiency() {
+    public void storePowerFullEfficiency() {
         target = new Battery.Builder().withCapacityWh(10_000).withEfficiencyPercentage(100).build();
         target.storePower(5000);
         target.storePower(1000);
@@ -37,7 +37,7 @@ class BatteryTest {
 
     @Test
     @DisplayName("Test storage and retrieval with 100% efficiency")
-    void retrievePowerFullEfficiency() {
+    public void retrievePowerFullEfficiency() {
         target = new Battery.Builder().withCapacityWh(10_000).withEfficiencyPercentage(100).build();
         target.storePower(5000);
         boolean retrieved = target.retrievePower(1000);
@@ -49,7 +49,7 @@ class BatteryTest {
 
     @Test
     @DisplayName("Test storage with 50% efficiency")
-    void storePowerLowEfficiency() {
+    public void storePowerLowEfficiency() {
         target = new Battery.Builder().withCapacityWh(20_000).withEfficiencyPercentage(50).build();
         target.storePower(10_000);
         target.storePower(2000);
@@ -61,7 +61,7 @@ class BatteryTest {
 
     @Test
     @DisplayName("Test retrieval of energy from empty battery")
-    void retrieveEnergyFromEmptyBattery() {
+    public void retrieveEnergyFromEmptyBattery() {
         target = new Battery.Builder().withCapacityWh(20_000).withEfficiencyPercentage(100).build();
         target.storePower(10_000);
         boolean retrieveOk = target.retrievePower(10_000);

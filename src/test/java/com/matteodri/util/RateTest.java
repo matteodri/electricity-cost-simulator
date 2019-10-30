@@ -9,67 +9,67 @@ import org.junit.jupiter.api.Test;
 class RateTest {
 
     @Test
-    void ofModay() {
+    public void ofModay() {
         testWeekday(2019, 10, 21);
     }
 
     @Test
-    void ofTuesday() {
+    public void ofTuesday() {
         testWeekday(2019, 10, 22);
     }
 
     @Test
-    void ofWednesday() {
+    public void ofWednesday() {
         testWeekday(2019, 10, 23);
     }
 
     @Test
-    void ofThursday() {
+    public void ofThursday() {
         testWeekday(2019, 10, 24);
     }
 
     @Test
-    void ofFriday() {
+    public void ofFriday() {
         testWeekday(2019, 10, 25);
     }
 
     @Test
-    void ofSaturday() {
+    public void ofSaturday() {
         testSaturday(2019, 10, 26);
     }
 
     @Test
-    void ofSunday() {
+    public void ofSunday() {
         testSunday(2019, 10, 27);
     }
 
     @Test
-    void ofAllSaints() {
+    public void ofAllSaints() {
         testNationalHoliday(2019, 11, 1);
     }
 
     @Test
-    void ofChristmas() {
+    public void ofChristmas() {
         testNationalHoliday(2019, 12, 25);
     }
 
     @Test
-    void ofNewYearsDay() {
+    public void ofNewYearsDay() {
         testNationalHoliday(2020, 1, 1);
     }
 
     @Test
-    void ofEaster2019() {
+    public void ofEaster2019() {
         testNationalHoliday(2019, 4, 21);
     }
 
     @Test
-    void ofEaster2020() {
+    public void ofEaster2020() {
         testNationalHoliday(2020, 4, 12);
     }
 
     @Test
-    void ofEasterMonday2025() {
+    public void ofEasterMonday2025() {
         testNationalHoliday(2025, 4, 21);
     }
 

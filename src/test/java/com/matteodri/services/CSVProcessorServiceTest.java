@@ -27,14 +27,9 @@ class CSVProcessorServiceTest {
 
     private CSVProcessorService target = new CSVProcessorService();
 
-    @BeforeEach
-    void setUp() {
-
-    }
-
     @Test
     @DisplayName("Test processing of empty reader")
-    void processEmptyReader() {
+    public void processEmptyReader() {
         Reader reader = new StringReader("");
 
         Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty());
@@ -58,7 +53,7 @@ class CSVProcessorServiceTest {
 
     @Test
     @DisplayName("Test processing of a file with two data lines in F1 (first data line is not considered in cost)")
-    void processTwoLinesReader() {
+    public void processTwoLinesReader() {
         Reader reader = new StringReader(
             "timestamp,curr_property,curr_solar_generating\n"
             + "2019-04-17 12:54:13,0,0\n"
