@@ -147,8 +147,8 @@ public class Stats {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Stats{");
-        sb.append("startTime=").append(startTime);
+        final StringBuilder sb = new StringBuilder(Stats.class.getSimpleName());
+        sb.append("{ startTime=").append(startTime);
         sb.append(", endTime=").append(endTime);
         sb.append(", overallCost=").append(overallCost);
         sb.append(", f1Cost=").append(f1Cost);

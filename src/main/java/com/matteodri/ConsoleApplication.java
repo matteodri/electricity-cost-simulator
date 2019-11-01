@@ -1,7 +1,6 @@
 package com.matteodri;
 
-import static java.lang.System.exit;
-
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.OptionalInt;
@@ -13,6 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.matteodri.services.CSVProcessorService;
+import com.matteodri.services.ExitWrapperService;
 import com.matteodri.services.Rates;
 import com.matteodri.services.Stats;
 
@@ -26,6 +26,9 @@ public class ConsoleApplication implements CommandLineRunner {
 
     @Autowired
     private CSVProcessorService csvProcessorService;
+
+    @Autowired
+    private ExitWrapperService exitWrapperService;
 
     public static void main(String[] args) throws Exception {
 
@@ -43,12 +46,11 @@ public class ConsoleApplication implements CommandLineRunner {
         } else {
             FileReader csvFileReader = null;
             try {
-
                 csvFileReader = new FileReader(args[0]);
 
             } catch (FileNotFoundException e) {
                 System.out.println("File not found");
-                exit(1);
+                exitWrapperService.exit(1);
             }
 
             Rates rates = null;
@@ -76,8 +78,6 @@ public class ConsoleApplication implements CommandLineRunner {
 
             printStats(stats);
         }
-
-        exit(0);
     }
 
     private void exitWithUsagePrintout() {
@@ -87,7 +87,7 @@ public class ConsoleApplication implements CommandLineRunner {
             + "<csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold>");
         System.out.println(" Costs are money per kWh. The warning threshold is a value in Watt, "
             + "the amount of time during which consumption from the grid exceeded the threshold will be returned");
-        exit(1);
+        exitWrapperService.exit(1);
     }
 
     private void printStats(Stats stats) {
@@ -97,8 +97,9 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println("Overall cost = " + stats.getOverallCost());
         System.out.println("Cost F1 = " + stats.getF1Cost() + " F2 = " + stats.getF2Cost()
             + " F3 = " + stats.getF3Cost());
-        System.out.println("Cost if had a battery F1 = " + stats.getF1CostIfHadBattery() + " F2 = " + stats.getF2CostIfHadBattery()
-            + " F3 = " + stats.getF3CostIfHadBattery());
+        System.out.println(
+            "Cost if had a battery F1 = " + stats.getF1CostIfHadBattery() + " F2 = " + stats.getF2CostIfHadBattery()
+                + " F3 = " + stats.getF3CostIfHadBattery());
         System.out.println("Peak consumption = " + stats.getPeakConsumptionW()
             + "W on " + stats.getPeakConsumptionTime());
         System.out.println("Minutes over threshold = " + stats.getTimeOverWarningThreshold().toMinutes());
@@ -107,4 +108,5 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println("Days processed " + stats.getDaysProcessed());
         System.out.println("Lines processed = " + stats.getProcessedLines());
     }
+
 }

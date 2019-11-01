@@ -103,8 +103,8 @@ public class CSVProcessorService {
                     double costPerKWh = rates.costOf(currentRate);
 
                     double cost = isEnergyBeingDrawnFromGrid ?
-                                  (double) energyBalanceFromGrid / 1000 * costPerKWh * measurementTimeFrameInHours
-                                  : 0;
+                        (double) energyBalanceFromGrid / 1000 * costPerKWh * measurementTimeFrameInHours
+                        : 0;
 
                     overallCostPerRate.compute(currentRate,
                         (r, overallCost) -> (overallCost == null) ? cost : overallCost + cost);
@@ -153,8 +153,8 @@ public class CSVProcessorService {
         stats.setDaysWithConsumptionGreaterThanSolarProduction(
             calculateDaysWithConsumptionGreaterThanSolarProduction(consumptionPerDay, solarProductionPerDay));
         stats.setDaysProcessed((Objects.nonNull(stats.getStartTime()) && Objects.nonNull(stats.getEndTime())) ?
-                                   Duration.between(stats.getStartTime(), stats.getEndTime()).toDays()
-                                 : 0 );
+            Duration.between(stats.getStartTime(), stats.getEndTime()).toDays()
+            : 0);
         stats.setProcessedLines(lineCount);
 
         logger.info("Process took {} ms", (System.currentTimeMillis() - startTime));

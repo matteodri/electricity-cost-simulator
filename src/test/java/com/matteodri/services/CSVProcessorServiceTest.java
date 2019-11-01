@@ -9,7 +9,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.OptionalInt;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -56,8 +56,8 @@ class CSVProcessorServiceTest {
     public void processTwoLinesReader() {
         Reader reader = new StringReader(
             "timestamp,curr_property,curr_solar_generating\n"
-            + "2019-04-17 12:54:13,0,0\n"
-            + "2019-04-17 12:55:13,600,0");
+                + "2019-04-17 12:54:13,0,0\n"
+                + "2019-04-17 12:55:13,600,0");
 
         Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty());
 

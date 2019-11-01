@@ -5,7 +5,7 @@ module com.matteodri.electricity.cost.simulator {
     requires spring.context;
     requires java.sql;
     requires org.apache.logging.log4j;
-    opens com.matteodri to spring.core, spring.beans, spring.context;
+    opens com.matteodri;
     opens com.matteodri.services;
     opens com.matteodri.util;
     exports com.matteodri.services;
