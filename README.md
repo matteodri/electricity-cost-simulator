@@ -3,7 +3,9 @@
 [![jdk11](https://img.shields.io/badge/java-11-blue.svg)](http://jdk.java.net/11)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/cd4fcd368f3f4818bbb351dc4e1a34c8)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=matteodri/electricity-cost-simulator&amp;utm_campaign=Badge_Grade)
 [![CircleCI](https://circleci.com/gh/matteodri/electricity-cost-simulator.svg?style=svg&circle-token=4ce3a7aae23a86df5e7a4f53810706d5c1f1450a)](https://circleci.com/gh/matteodri/electricity-cost-simulator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Purpose
 Small command line application to calculate electricity cost taking as input a tariff and a CSV file produced by an OWL Intuition device. The application also simulates the cost savings that could have been achieved in the analysed time frame if system was equipped with an electricity storage.
 Refunds for energy pushed to the network are not being considered, the application only calculates costs on the energy being drawn from the network.
 
@@ -67,11 +69,7 @@ Assemble JAR:
 
     mvn clean package
 
-Upload code coverage to Codacy:
-
-    mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken=<Project API token> -DapiToken=<Project API token>
-
-# License
+## License
 
 >MIT License
 >
