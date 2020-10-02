@@ -22,6 +22,7 @@ public class Stats {
     private Integer peakConsumptionW;
     private LocalDateTime peakConsumptionTime;
     private Duration timeOverWarningThreshold;
+    private Duration timeDrawingEnergyFromGridIfHadBattery;
     private long daysWithConsumptionGreaterThanSolarProduction;
     private long daysProcessed;
     private long processedLines;
@@ -120,6 +121,14 @@ public class Stats {
 
     public void setTimeOverWarningThreshold(Duration timeOverWarningThreshold) {
         this.timeOverWarningThreshold = timeOverWarningThreshold;
+    }
+
+    public Duration getTimeDrawingEnergyFromGridIfHadBattery() {
+        return timeDrawingEnergyFromGridIfHadBattery;
+    }
+
+    public void setTimeDrawingEnergyFromGridIfHadBattery(Duration timeDrawingEnergyFromGridIfHadBattery) {
+        this.timeDrawingEnergyFromGridIfHadBattery = timeDrawingEnergyFromGridIfHadBattery;
     }
 
     public long getDaysWithConsumptionGreaterThanSolarProduction() {

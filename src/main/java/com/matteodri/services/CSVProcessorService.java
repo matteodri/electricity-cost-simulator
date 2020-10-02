@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +35,8 @@ public class CSVProcessorService {
 
     private static final Logger logger = LogManager.getLogger(CSVProcessorService.class);
 
-    public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW) {
+    public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW,
+        OptionalDouble solarMultiplier) {
         Battery battery = new Battery.Builder().build();
         BufferedReader br = null;
         String line;
@@ -42,6 +44,7 @@ public class CSVProcessorService {
         LocalDateTime previousTimestamp = null;
         int peakConsumptionW = 0;
         Duration timeOverThreshold = Duration.ZERO;
+        Duration timeDrawingFromGridIfHadBattery = Duration.ZERO;
         LocalDateTime peakConsumptionTimestamp = null;
         Map<String, Integer> fieldIndexMap = null;
         Stats stats = new Stats();
@@ -79,7 +82,7 @@ public class CSVProcessorService {
                     int currentConsumptionW = parseIntValue(strCurrentConsumptionW);
 
                     String strSolarProduction = splitLine[fieldIndexMap.get(FIELD_NAME_SOLAR_PRODUCTION)];
-                    int solarProductionW = parseIntValue(strSolarProduction);
+                    int solarProductionW = (int) (parseDoubleValue(strSolarProduction) * solarMultiplier.orElse(1.0));
 
                     // a positive energy balance indicates energy is being drawn from the electricity grid,
                     // a negative balance means surplus energy is being pushed to the grid
@@ -88,6 +91,10 @@ public class CSVProcessorService {
 
                     boolean canBatteryCoverCurrentConsumption = !isEnergyBeingDrawnFromGrid ||
                         battery.retrievePower(energyBalanceFromGrid * measurementTimeFrameInHours);
+
+                    if (!canBatteryCoverCurrentConsumption){
+                        timeDrawingFromGridIfHadBattery = timeDrawingFromGridIfHadBattery.plus(measurementTimeFrame);
+                    }
 
                     if (!isEnergyBeingDrawnFromGrid) {
                         battery.storePower(-energyBalanceFromGrid * measurementTimeFrameInHours);
@@ -150,6 +157,7 @@ public class CSVProcessorService {
         stats.setPeakConsumptionW(peakConsumptionW);
         stats.setPeakConsumptionTime(peakConsumptionTimestamp);
         stats.setTimeOverWarningThreshold(timeOverThreshold);
+        stats.setTimeDrawingEnergyFromGridIfHadBattery(timeDrawingFromGridIfHadBattery);
         stats.setDaysWithConsumptionGreaterThanSolarProduction(
             calculateDaysWithConsumptionGreaterThanSolarProduction(consumptionPerDay, solarProductionPerDay));
         stats.setDaysProcessed((Objects.nonNull(stats.getStartTime()) && Objects.nonNull(stats.getEndTime())) ?
@@ -162,11 +170,20 @@ public class CSVProcessorService {
         return stats;
     }
 
+    private double parseDoubleValue(String strValue) {
+        double doubleValue = 0;
+        try {
+            doubleValue = Double.parseDouble(strValue);
+        } catch (NumberFormatException nfe) {
+            logger.warn("Not able to parse {}", strValue);
+        }
+        return doubleValue;
+    }
+
     private int parseIntValue(String strValue) {
         int intValue = 0;
         try {
             intValue = Double.valueOf(strValue).intValue();
-
         } catch (NumberFormatException nfe) {
             logger.warn("Not able to parse {}", strValue);
         }

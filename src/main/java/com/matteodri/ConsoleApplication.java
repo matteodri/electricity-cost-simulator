@@ -2,6 +2,8 @@ package com.matteodri;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.Duration;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,19 +75,29 @@ public class ConsoleApplication implements CommandLineRunner {
                 }
             }
 
-            Stats stats = csvProcessorService.process(csvFileReader, rates, warningThresholdW);
+            OptionalDouble solarMultiplier = OptionalDouble.empty();
+            if (args.length > 5) {
+                try {
+                    solarMultiplier = OptionalDouble.of(Double.parseDouble(args[5]));
+                } catch (NumberFormatException nfe) {
+                    System.out.println("Invalid solar multiplier argument.");
+                    exitWithUsagePrintout();
+                }
+            }
+
+            Stats stats = csvProcessorService.process(csvFileReader, rates, warningThresholdW, solarMultiplier);
 
             printStats(stats);
         }
     }
 
     private void exitWithUsagePrintout() {
-        System.out.println(" Usage: java -jar electricity-cost-simulator-0.1.0.jar "
+        System.out.println(" Usage: java -jar electricity-cost-simulator-<ver>.jar "
             + "<csv file> <f1 cost> <f2 cost> <f3 cost>");
-        System.out.println("    or: java -jar electricity-cost-simulator-0.1.0.jar "
+        System.out.println("    or: java -jar electricity-cost-simulator-<ver>.jar "
             + "<csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold>");
-        System.out.println(" Costs are money per kWh. The warning threshold is a value in Watt, "
-            + "the amount of time during which consumption from the grid exceeded the threshold will be returned");
+        System.out.println("    or: java -jar electricity-cost-simulator-<ver>.jar "
+            + "<csv file> <f1 cost> <f2 cost> <f3 cost> <solar multiplier>");
         exitWrapperService.exit(1);
     }
 
@@ -101,11 +113,24 @@ public class ConsoleApplication implements CommandLineRunner {
                 + " F3 = " + stats.getF3CostIfHadBattery());
         System.out.println("Peak consumption = " + stats.getPeakConsumptionW()
             + "W on " + stats.getPeakConsumptionTime());
-        System.out.println("Minutes over threshold = " + stats.getTimeOverWarningThreshold().toMinutes());
+        System.out.println("Time over warning threshold = " + formatDuration(stats.getTimeOverWarningThreshold()));
+        System.out.println("Time drawing energy from grid if had a battery = "
+            + formatDuration(stats.getTimeDrawingEnergyFromGridIfHadBattery()));
         System.out.println("Days with consumption greater than solar production = "
             + stats.getDaysWithConsumptionGreaterThanSolarProduction());
         System.out.println("Days processed " + stats.getDaysProcessed());
         System.out.println("Lines processed = " + stats.getProcessedLines());
+    }
+
+    private String formatDuration(Duration duration) {
+        if (duration == null) {
+            return "";
+        }
+        return String.format("%sd %sh %sm %ss",
+            duration.toDaysPart(),
+            duration.toHoursPart(),
+            duration.toMinutesPart(),
+            duration.toSecondsPart());
     }
 
 }

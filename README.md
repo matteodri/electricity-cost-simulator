@@ -58,7 +58,8 @@ Sample output:
     Cost F1 = 11.79842008750088 F2 = 71.95151102922807 F3 = 4.298135082944151
     Cost if had a battery F1 = 1.6059516733333363 F2 = 3.561511621666597 F3 = 0.404122104388888
     Peak consumption = 4476W on 2019-04-27T12:17:53
-    Minutes over threshold = 16
+    Time over warning threshold = 0d 0h 16m 12s
+    Time drawing energy from grid if had a battery = 15d 13h 56m 21s
     Days with consumption greater than solar production = 22
     Days processed 166
     Lines processed = 718576

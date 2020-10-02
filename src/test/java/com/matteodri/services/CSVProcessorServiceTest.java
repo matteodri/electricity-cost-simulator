@@ -7,9 +7,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,8 @@ class CSVProcessorServiceTest {
     public void processEmptyReader() {
         Reader reader = new StringReader("");
 
-        Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty());
+        Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty(),
+            OptionalDouble.empty());
 
         assertNull(stats.getStartTime());
         assertNull(stats.getEndTime());
@@ -46,6 +47,7 @@ class CSVProcessorServiceTest {
         assertEquals(0, stats.getPeakConsumptionW().intValue());
         assertNull(stats.getPeakConsumptionTime());
         assertEquals(Duration.ZERO, stats.getTimeOverWarningThreshold());
+        assertEquals(Duration.ZERO, stats.getTimeDrawingEnergyFromGridIfHadBattery());
         assertEquals(0, stats.getDaysWithConsumptionGreaterThanSolarProduction());
         assertEquals(0, stats.getDaysProcessed());
         assertEquals(0, stats.getProcessedLines());
@@ -59,7 +61,8 @@ class CSVProcessorServiceTest {
                 + "2019-04-17 12:54:13,0,0\n"
                 + "2019-04-17 12:55:13,600,0");
 
-        Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty());
+        Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty(),
+            OptionalDouble.empty());
 
         assertEquals(LocalDateTime.of(2019, 4, 17, 12, 54, 13), stats.getStartTime());
         assertEquals(LocalDateTime.of(2019, 4, 17, 12, 55, 13), stats.getEndTime());
@@ -73,6 +76,7 @@ class CSVProcessorServiceTest {
         assertEquals(600, stats.getPeakConsumptionW().intValue());
         assertEquals(LocalDateTime.of(2019, 4, 17, 12, 55, 13), stats.getPeakConsumptionTime());
         assertEquals(Duration.ZERO, stats.getTimeOverWarningThreshold());
+        assertEquals(Duration.ofMinutes(1), stats.getTimeDrawingEnergyFromGridIfHadBattery());
         assertEquals(1, stats.getDaysWithConsumptionGreaterThanSolarProduction());
         assertEquals(0, stats.getDaysProcessed());
         assertEquals(3, stats.getProcessedLines());
