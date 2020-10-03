@@ -31,17 +31,18 @@ Application calculates electricity cost (without considering taxes and fixed cos
 
 or:
 
-`java -jar electricity-cost-simulator-0.1.0.jar <csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold>`
+`java -jar electricity-cost-simulator-0.1.0.jar <csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold> <solar multiplier>`
 
 Parameters:
 
-| Name                 | Description              | Unit      |
-|----------------------|--------------------------|-----------|
-| `csv file`           | path to CSV file         |           |
-| `f1 cost`            | cost of F1 rate          | money/kWh |
-| `f2 cost`            | cost of F2 rate          | money/kWh |
-| `f3 cost`            | cost of F3 rate          | money/kWh |
-| `warning threshold`  | virtual power threshold  | W         |
+| Name                 | Description                                | Unit      |
+|----------------------|--------------------------------------------|-----------|
+| `csv file`           | path to CSV file                           |           |
+| `f1 cost`            | cost of F1 rate                            | money/kWh |
+| `f2 cost`            | cost of F2 rate                            | money/kWh |
+| `f3 cost`            | cost of F3 rate                            | money/kWh |
+| `warning threshold`  | virtual power threshold                    | W         |
+| `solar multiplier`   | multiplier to simulate different PV sytem  |           |
 
 
 The application, among other stats, will return the amount of time during which consumption from the network exceeded the `warning threshold`. This value helps determine if it would be possible to move to a cheaper contract with a lower allowed peak consumption.
@@ -49,7 +50,7 @@ Cost values are currency agnostic, thus results are not tied to any specific cur
 
 Sample output:
     
-    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./2019_readings.csv" 0.129 0.129 0.0299 3500
+    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./2019_readings.csv" 0.129 0.129 0.0299 3500 1.5
     
     RESULTS
     Dataset starts at 2019-04-17T20:54:13
