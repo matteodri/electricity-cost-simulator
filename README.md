@@ -31,7 +31,7 @@ Application calculates electricity cost (without considering taxes and fixed cos
 
 or:
 
-`java -jar electricity-cost-simulator-0.1.0.jar <csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold> <solar multiplier>`
+`java -jar electricity-cost-simulator-0.1.0.jar <csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold> <solar multiplier> <clipping threshold>`
 
 Parameters:
 
