@@ -85,7 +85,17 @@ public class ConsoleApplication implements CommandLineRunner {
                 }
             }
 
-            Stats stats = csvProcessorService.process(csvFileReader, rates, warningThresholdW, solarMultiplier);
+            OptionalInt clippingThresholdW = OptionalInt.empty();
+            if (args.length > 6) {
+                try {
+                    clippingThresholdW = OptionalInt.of(Integer.parseInt(args[6]));
+                } catch (NumberFormatException nfe) {
+                    System.out.println("Invalid clipping threshold argument.");
+                    exitWithUsagePrintout();
+                }
+            }
+
+            Stats stats = csvProcessorService.process(csvFileReader, rates, warningThresholdW, solarMultiplier, clippingThresholdW);
 
             printStats(stats);
         }
@@ -95,9 +105,7 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println(" Usage: java -jar electricity-cost-simulator-<ver>.jar "
             + "<csv file> <f1 cost> <f2 cost> <f3 cost>");
         System.out.println("    or: java -jar electricity-cost-simulator-<ver>.jar "
-            + "<csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold>");
-        System.out.println("    or: java -jar electricity-cost-simulator-<ver>.jar "
-            + "<csv file> <f1 cost> <f2 cost> <f3 cost> <solar multiplier>");
+            + "<csv file> <f1 cost> <f2 cost> <f3 cost> <warning threshold> <solar multiplier> <clipping threshold>");
         exitWrapperService.exit(1);
     }
 
@@ -111,13 +119,21 @@ public class ConsoleApplication implements CommandLineRunner {
         System.out.println(
             "Cost if had a battery F1 = " + stats.getF1CostIfHadBattery() + " F2 = " + stats.getF2CostIfHadBattery()
                 + " F3 = " + stats.getF3CostIfHadBattery());
-        System.out.println("Peak consumption = " + stats.getPeakConsumptionW()
+        System.out.println("Total solar production = " + stats.getTotalSolarProductionKWh() + "kWh");
+        System.out.println("Peak consumption from grid = " + stats.getPeakConsumptionW()
             + "W on " + stats.getPeakConsumptionTime());
+        System.out.println("Peak production = " + stats.getPeakProductionW()
+            + "W on " + stats.getPeakProductionTime());
         System.out.println("Time over warning threshold = " + formatDuration(stats.getTimeOverWarningThreshold()));
         System.out.println("Time drawing energy from grid if had a battery = "
             + formatDuration(stats.getTimeDrawingEnergyFromGridIfHadBattery()));
         System.out.println("Days with consumption greater than solar production = "
             + stats.getDaysWithConsumptionGreaterThanSolarProduction());
+        System.out.println("Solar production lost due to clipping = "
+            + stats.getSolarProductionLostDueToClippingKWh() + "kWh");
+        System.out.println("Time when production exceeds clipping threshold = "
+            + stats.getPercentOfTimeWithProductionOverClippingThreshold() + "%");
+
         System.out.println("Days processed " + stats.getDaysProcessed());
         System.out.println("Lines processed = " + stats.getProcessedLines());
     }

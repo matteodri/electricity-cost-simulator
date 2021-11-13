@@ -36,16 +36,22 @@ public class CSVProcessorService {
     private static final Logger logger = LogManager.getLogger(CSVProcessorService.class);
 
     public Stats process(Reader csvFileReader, Rates rates, OptionalInt warningThresholdW,
-        OptionalDouble solarMultiplier) {
+        OptionalDouble solarMultiplier, OptionalInt clippingThresholdW) {
         Battery battery = new Battery.Builder().build();
         BufferedReader br = null;
         String line;
         long lineCount = 0;
         LocalDateTime previousTimestamp = null;
         int peakConsumptionW = 0;
+        LocalDateTime peakConsumptionTimestamp = null;
+        int peakProductionW = 0;
+        LocalDateTime peakProductionTimestamp = null;
+        double totalSolarProductionWh = 0;
+        double solarProductionLostDueToClippingWh = 0;
         Duration timeOverThreshold = Duration.ZERO;
         Duration timeDrawingFromGridIfHadBattery = Duration.ZERO;
-        LocalDateTime peakConsumptionTimestamp = null;
+        Duration timeWithSolarProduction = Duration.ZERO;
+        Duration timeWithProductionOverClippingThreshold = Duration.ZERO;
         Map<String, Integer> fieldIndexMap = null;
         Stats stats = new Stats();
 
@@ -80,9 +86,15 @@ public class CSVProcessorService {
 
                     String strCurrentConsumptionW = splitLine[fieldIndexMap.get(FIELD_NAME_CURRENT_CONSUMPTION)];
                     int currentConsumptionW = parseIntValue(strCurrentConsumptionW);
+                    double consumptioInMeasurementWindowWh = (double) currentConsumptionW * measurementTimeFrameInHours;
 
                     String strSolarProduction = splitLine[fieldIndexMap.get(FIELD_NAME_SOLAR_PRODUCTION)];
                     int solarProductionW = (int) (parseDoubleValue(strSolarProduction) * solarMultiplier.orElse(1.0));
+                    double productionInMeasurementWindowWh = (double) solarProductionW * measurementTimeFrameInHours;
+
+                    if (solarProductionW > 0) {
+                        timeWithSolarProduction = timeWithSolarProduction.plus(measurementTimeFrame);
+                    }
 
                     // a positive energy balance indicates energy is being drawn from the electricity grid,
                     // a negative balance means surplus energy is being pushed to the grid
@@ -121,14 +133,26 @@ public class CSVProcessorService {
                     }
                     consumptionPerDay.compute(timestamp.toLocalDate(),
                         (d, dailyConsumptionSoFar) -> (dailyConsumptionSoFar == null) ?
-                            currentConsumptionW : dailyConsumptionSoFar + currentConsumptionW);
+                            consumptioInMeasurementWindowWh : dailyConsumptionSoFar + consumptioInMeasurementWindowWh);
                     solarProductionPerDay.compute(timestamp.toLocalDate(),
                         (d, dailySolarProductionSoFar) -> (dailySolarProductionSoFar == null) ?
-                            solarProductionW : dailySolarProductionSoFar + solarProductionW);
+                            productionInMeasurementWindowWh : dailySolarProductionSoFar + productionInMeasurementWindowWh);
 
                     if (energyBalanceFromGrid > peakConsumptionW) {
                         peakConsumptionW = energyBalanceFromGrid;
                         peakConsumptionTimestamp = timestamp;
+                    }
+
+                    if (solarProductionW > peakProductionW){
+                        peakProductionW = solarProductionW;
+                        peakProductionTimestamp = timestamp;
+                    }
+
+                    totalSolarProductionWh += (double) solarProductionW * measurementTimeFrameInHours;
+
+                    if (clippingThresholdW.isPresent() && solarProductionW > clippingThresholdW.getAsInt()) {
+                        solarProductionLostDueToClippingWh += (double) (solarProductionW - clippingThresholdW.getAsInt()) * measurementTimeFrameInHours;
+                        timeWithProductionOverClippingThreshold = timeWithProductionOverClippingThreshold.plus(measurementTimeFrame);
                     }
 
                     previousTimestamp = timestamp;
@@ -156,6 +180,8 @@ public class CSVProcessorService {
         stats.setF3CostIfHadBattery(overallCostPerRateIfHadBattery.getOrDefault(Rate.F3, 0d));
         stats.setPeakConsumptionW(peakConsumptionW);
         stats.setPeakConsumptionTime(peakConsumptionTimestamp);
+        stats.setPeakProductionW(peakProductionW);
+        stats.setPeakProductionTime(peakProductionTimestamp);
         stats.setTimeOverWarningThreshold(timeOverThreshold);
         stats.setTimeDrawingEnergyFromGridIfHadBattery(timeDrawingFromGridIfHadBattery);
         stats.setDaysWithConsumptionGreaterThanSolarProduction(
@@ -164,6 +190,9 @@ public class CSVProcessorService {
             Duration.between(stats.getStartTime(), stats.getEndTime()).toDays()
             : 0);
         stats.setProcessedLines(lineCount);
+        stats.setTotalSolarProductionKWh((long) totalSolarProductionWh / 1000);
+        stats.setSolarProductionLostDueToClippingKWh((long) solarProductionLostDueToClippingWh / 1000);
+        stats.setPercentOfTimeWithProductionOverClippingThreshold(calculateDurationPercentage(timeWithSolarProduction, timeWithProductionOverClippingThreshold));
 
         logger.info("Process took {} ms", (System.currentTimeMillis() - startTime));
 
@@ -203,5 +232,13 @@ public class CSVProcessorService {
         return consumptionPerDay.keySet().stream()
             .filter(day -> consumptionPerDay.get(day) > solarProductionPerDay.get(day))
             .count();
+    }
+
+
+    private double calculateDurationPercentage(Duration totalDuration, Duration partialDuration) {
+        if (totalDuration.isZero()){
+            return 0;
+        }
+        return (double) partialDuration.toMillis() * 100 / totalDuration.toMillis();
     }
 }

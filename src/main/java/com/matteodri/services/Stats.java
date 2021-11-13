@@ -21,11 +21,16 @@ public class Stats {
     private Double f3CostIfHadBattery;
     private Integer peakConsumptionW;
     private LocalDateTime peakConsumptionTime;
+    private Integer peakProductionW;
+    private LocalDateTime peakProductionTime;
     private Duration timeOverWarningThreshold;
     private Duration timeDrawingEnergyFromGridIfHadBattery;
     private long daysWithConsumptionGreaterThanSolarProduction;
     private long daysProcessed;
     private long processedLines;
+    private long totalSolarProductionKWh;
+    private long solarProductionLostDueToClippingKWh;
+    private double percentOfTimeWithProductionOverClippingThreshold;
 
     public LocalDateTime getStartTime() {
         return startTime;
@@ -115,6 +120,22 @@ public class Stats {
         this.peakConsumptionTime = peakConsumptionTime;
     }
 
+    public Integer getPeakProductionW() {
+        return peakProductionW;
+    }
+
+    public void setPeakProductionW(Integer peakProductionW) {
+        this.peakProductionW = peakProductionW;
+    }
+
+    public LocalDateTime getPeakProductionTime() {
+        return peakProductionTime;
+    }
+
+    public void setPeakProductionTime(LocalDateTime peakProductionTime) {
+        this.peakProductionTime = peakProductionTime;
+    }
+
     public Duration getTimeOverWarningThreshold() {
         return timeOverWarningThreshold;
     }
@@ -154,6 +175,31 @@ public class Stats {
         this.processedLines = processedLines;
     }
 
+    public long getTotalSolarProductionKWh() {
+        return totalSolarProductionKWh;
+    }
+
+    public void setTotalSolarProductionKWh(long totalSolarProductionKWh) {
+        this.totalSolarProductionKWh = totalSolarProductionKWh;
+    }
+
+    public long getSolarProductionLostDueToClippingKWh() {
+        return solarProductionLostDueToClippingKWh;
+    }
+
+    public void setSolarProductionLostDueToClippingKWh(long solarProductionLostDueToClippingKWh) {
+        this.solarProductionLostDueToClippingKWh = solarProductionLostDueToClippingKWh;
+    }
+
+    public double getPercentOfTimeWithProductionOverClippingThreshold() {
+        return percentOfTimeWithProductionOverClippingThreshold;
+    }
+
+    public void setPercentOfTimeWithProductionOverClippingThreshold(
+        double percentOfTimeWithProductionOverClippingThreshold) {
+        this.percentOfTimeWithProductionOverClippingThreshold = percentOfTimeWithProductionOverClippingThreshold;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(Stats.class.getSimpleName());
@@ -168,10 +214,15 @@ public class Stats {
         sb.append(", f3CostIfHadBattery=").append(f3CostIfHadBattery);
         sb.append(", peakConsumptionW=").append(peakConsumptionW);
         sb.append(", peakConsumptionTime=").append(peakConsumptionTime);
+        sb.append(", peakCProductionW=").append(peakProductionW);
+        sb.append(", peakCProductionTime=").append(peakProductionTime);
         sb.append(", timeOverWarningThreshold=").append(timeOverWarningThreshold);
         sb.append(", daysWithConsumptionGreaterThanSolarProduction=").append(daysWithConsumptionGreaterThanSolarProduction);
         sb.append(", daysProcessed=").append(daysProcessed);
         sb.append(", processedLines=").append(processedLines);
+        sb.append(", totalSolarProduction=").append(totalSolarProductionKWh);
+        sb.append(", solarProductionLostDueToClipping=").append(solarProductionLostDueToClippingKWh);
+        sb.append(", percentOfTimeWithProductionOverClippingThreshold=").append(percentOfTimeWithProductionOverClippingThreshold);
         sb.append('}');
         return sb.toString();
     }

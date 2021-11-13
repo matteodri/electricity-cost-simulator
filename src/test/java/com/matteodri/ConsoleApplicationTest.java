@@ -2,7 +2,6 @@ package com.matteodri;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,7 +60,7 @@ class ConsoleApplicationTest {
     @Test
     @DisplayName("Input file does not exist")
     public void fileDoesNotExist() throws Exception {
-        when(csvProcessorService.process(any(), any(), any(OptionalInt.class), any(OptionalDouble.class)))
+        when(csvProcessorService.process(any(), any(), any(OptionalInt.class), any(OptionalDouble.class), any(OptionalInt.class)))
             .thenReturn(buildStats());
         target.run("./thisDoesntExist.csv", "0.1", "0.1", "0.1");
 
@@ -71,23 +70,25 @@ class ConsoleApplicationTest {
     @Test
     @DisplayName("Correct input")
     public void correctInput() throws Exception {
-        when(csvProcessorService.process(any(), any(), any(OptionalInt.class), any(OptionalDouble.class)))
+        when(csvProcessorService.process(any(), any(), any(OptionalInt.class), any(OptionalDouble.class), any(OptionalInt.class)))
             .thenReturn(buildStats());
-        target.run("src/test/resources/test-file.csv", "0.1", "0.2", "0.3", "4000", "1.45");
+        target.run("src/test/resources/test-file.csv", "0.1", "0.2", "0.3", "4000", "1.45", "4100");
 
         ArgumentCaptor<Rates> ratesCaptor = ArgumentCaptor.forClass(Rates.class);
-        ArgumentCaptor<OptionalInt> thresholdCaptor = ArgumentCaptor.forClass(OptionalInt.class);
+        ArgumentCaptor<OptionalInt> warningThresholdCaptor = ArgumentCaptor.forClass(OptionalInt.class);
         ArgumentCaptor<OptionalDouble> solarMultiplierCaptor = ArgumentCaptor.forClass(OptionalDouble.class);
+        ArgumentCaptor<OptionalInt> clippingThresholdCaptor = ArgumentCaptor.forClass(OptionalInt.class);
 
-        verify(csvProcessorService).process(any(Reader.class), ratesCaptor.capture(), thresholdCaptor.capture(),
-            solarMultiplierCaptor.capture());
+        verify(csvProcessorService).process(any(Reader.class), ratesCaptor.capture(), warningThresholdCaptor.capture(),
+            solarMultiplierCaptor.capture(), clippingThresholdCaptor.capture());
 
         assertEquals(0.1, ratesCaptor.getValue().costOf(Rate.F1), DELTA);
         assertEquals(0.2, ratesCaptor.getValue().costOf(Rate.F2), DELTA);
         assertEquals(0.3, ratesCaptor.getValue().costOf(Rate.F3), DELTA);
 
-        assertEquals(4000, thresholdCaptor.getValue().getAsInt());
+        assertEquals(4000, warningThresholdCaptor.getValue().getAsInt());
         assertEquals(1.45, solarMultiplierCaptor.getValue().getAsDouble(), DELTA);
+        assertEquals(4100, clippingThresholdCaptor.getValue().getAsInt());
     }
 
     private Stats buildStats() {

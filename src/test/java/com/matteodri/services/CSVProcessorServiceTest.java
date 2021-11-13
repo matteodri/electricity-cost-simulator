@@ -33,7 +33,7 @@ class CSVProcessorServiceTest {
         Reader reader = new StringReader("");
 
         Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty(),
-            OptionalDouble.empty());
+            OptionalDouble.empty(), OptionalInt.empty());
 
         assertNull(stats.getStartTime());
         assertNull(stats.getEndTime());
@@ -46,9 +46,13 @@ class CSVProcessorServiceTest {
         assertEquals(0d, stats.getF3CostIfHadBattery().doubleValue());
         assertEquals(0, stats.getPeakConsumptionW().intValue());
         assertNull(stats.getPeakConsumptionTime());
+        assertEquals(0, stats.getPeakProductionW().intValue());
+        assertNull(stats.getPeakProductionTime());
         assertEquals(Duration.ZERO, stats.getTimeOverWarningThreshold());
         assertEquals(Duration.ZERO, stats.getTimeDrawingEnergyFromGridIfHadBattery());
         assertEquals(0, stats.getDaysWithConsumptionGreaterThanSolarProduction());
+        assertEquals(0, stats.getSolarProductionLostDueToClippingKWh());
+        assertEquals(0, stats.getPercentOfTimeWithProductionOverClippingThreshold());
         assertEquals(0, stats.getDaysProcessed());
         assertEquals(0, stats.getProcessedLines());
     }
@@ -62,7 +66,7 @@ class CSVProcessorServiceTest {
                 + "2019-04-17 12:55:13,600,0");
 
         Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty(),
-            OptionalDouble.empty());
+            OptionalDouble.empty(), OptionalInt.empty());
 
         assertEquals(LocalDateTime.of(2019, 4, 17, 12, 54, 13), stats.getStartTime());
         assertEquals(LocalDateTime.of(2019, 4, 17, 12, 55, 13), stats.getEndTime());
@@ -75,10 +79,33 @@ class CSVProcessorServiceTest {
         assertEquals(0d, stats.getF3CostIfHadBattery().doubleValue());
         assertEquals(600, stats.getPeakConsumptionW().intValue());
         assertEquals(LocalDateTime.of(2019, 4, 17, 12, 55, 13), stats.getPeakConsumptionTime());
+        assertEquals(0, stats.getPeakProductionW().intValue());
         assertEquals(Duration.ZERO, stats.getTimeOverWarningThreshold());
         assertEquals(Duration.ofMinutes(1), stats.getTimeDrawingEnergyFromGridIfHadBattery());
         assertEquals(1, stats.getDaysWithConsumptionGreaterThanSolarProduction());
         assertEquals(0, stats.getDaysProcessed());
         assertEquals(3, stats.getProcessedLines());
+    }
+
+    @Test
+    @DisplayName("Test processing of a file with three data lines (first data line is not considered) with production over clipping threshold")
+    public void processProductionWithClipping() {
+        Reader reader = new StringReader(
+            "timestamp,curr_property,curr_solar_generating\n"
+                + "2021-11-13 12:00:00,0,0\n"
+                + "2021-11-13 13:00:00,0,5000\n"
+                + "2021-11-13 14:00:00,1500,1000");
+
+        Stats stats = target.process(reader, new Rates(F1_RATE, F2_RATE, F3_RATE), OptionalInt.empty(),
+            OptionalDouble.empty(), OptionalInt.of(3_000));
+
+        assertEquals(500, stats.getPeakConsumptionW().intValue());
+        assertEquals(LocalDateTime.of(2021, 11, 13, 14, 0, 0), stats.getPeakConsumptionTime());
+        assertEquals(5000, stats.getPeakProductionW().intValue());
+        assertEquals(LocalDateTime.of(2021, 11, 13, 13, 0, 0), stats.getPeakProductionTime());
+        assertEquals(2, stats.getSolarProductionLostDueToClippingKWh());
+        assertEquals(50, stats.getPercentOfTimeWithProductionOverClippingThreshold());
+        assertEquals(0, stats.getDaysProcessed());
+        assertEquals(4, stats.getProcessedLines());
     }
 }

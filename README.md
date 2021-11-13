@@ -43,6 +43,7 @@ Parameters:
 | `f3 cost`            | cost of F3 rate                            | money/kWh |
 | `warning threshold`  | virtual power threshold                    | W         |
 | `solar multiplier`   | multiplier to simulate different PV sytem  |           |
+| `clipping threshold` | virtual clipping threshold of the inverter | W         |
 
 
 The application, among other stats, will return the amount of time during which consumption from the network exceeded the `warning threshold`. This value helps determine if it would be possible to move to a cheaper contract with a lower allowed peak consumption.
@@ -50,20 +51,24 @@ Cost values are currency agnostic, thus results are not tied to any specific cur
 
 Sample output:
     
-    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./2019_readings.csv" 0.129 0.129 0.0299 3500 1.5
+    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./readings.csv" 0.129 0.129 0.0299 3500 2.0 6000
     
     RESULTS
-    Dataset starts at 2019-04-17T20:54:13
-    Dataset ends at 2019-09-30T23:59:55
-    Overall cost = 88.04806619967312
-    Cost F1 = 11.79842008750088 F2 = 71.95151102922807 F3 = 4.298135082944151
-    Cost if had a battery F1 = 1.6059516733333363 F2 = 3.561511621666597 F3 = 0.404122104388888
-    Peak consumption = 4476W on 2019-04-27T12:17:53
-    Time over warning threshold = 0d 0h 16m 12s
-    Time drawing energy from grid if had a battery = 15d 13h 56m 21s
-    Days with consumption greater than solar production = 22
-    Days processed 166
-    Lines processed = 718576
+    Dataset starts at 2020-11-01T00:00:35
+    Dataset ends at 2021-10-31T23:59:47
+    Overall cost = 191.6102501086235
+    Cost F1 = 47.68291102250538 F2 = 108.15386190583524 F3 = 35.773477180282875
+    Cost if had a battery F1 = 15.513070153333672 F2 = 22.06679206583325 F3 = 7.497453363472788
+    Total solar production = 9520kWh
+    Peak consumption from grid = 5288W on 2021-03-12T06:57:11
+    Peak production = 7244W on 2021-05-23T11:49:57
+    Time over warning threshold = 0d 2h 15m 24s
+    Time drawing energy from grid if had a battery = 45d 12h 8m 44s
+    Days with consumption greater than solar production = 89
+    Solar production lost due to clipping = 7kWh
+    Time when production exceeds clipping threshold = 0.4754589779344939%
+    Days processed 364
+    Lines processed = 1537228
 
 ## Source
 
