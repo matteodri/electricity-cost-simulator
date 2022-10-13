@@ -51,7 +51,7 @@ Cost values are currency agnostic, thus results are not tied to any specific cur
 
 Sample output:
     
-    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./readings.csv" 0.129 0.129 0.0299 3500 2.0 6000
+    $java -jar electricity-cost-simulator-0.1.0-SNAPSHOT.jar "./readings.csv" 0.129 0.0299 0.0299 3500 2.0 6000
     
     RESULTS
     Dataset starts at 2020-11-01T00:00:35

@@ -101,14 +101,16 @@ public class CSVProcessorService {
                     int energyBalanceFromGrid = currentConsumptionW - solarProductionW;
                     boolean isEnergyBeingDrawnFromGrid = energyBalanceFromGrid > 0;
 
-                    boolean canBatteryCoverCurrentConsumption = !isEnergyBeingDrawnFromGrid ||
-                        battery.retrievePower(energyBalanceFromGrid * measurementTimeFrameInHours);
+                    boolean canBatteryCoverCurrentConsumption = true;
+                    if (isEnergyBeingDrawnFromGrid) {
+                        canBatteryCoverCurrentConsumption = battery.retrievePower(
+                            energyBalanceFromGrid * measurementTimeFrameInHours);
 
-                    if (!canBatteryCoverCurrentConsumption){
-                        timeDrawingFromGridIfHadBattery = timeDrawingFromGridIfHadBattery.plus(measurementTimeFrame);
-                    }
-
-                    if (!isEnergyBeingDrawnFromGrid) {
+                        if (!canBatteryCoverCurrentConsumption) {
+                            timeDrawingFromGridIfHadBattery = timeDrawingFromGridIfHadBattery.plus(
+                                measurementTimeFrame);
+                        }
+                    } else {
                         battery.storePower(-energyBalanceFromGrid * measurementTimeFrameInHours);
                     }
 
